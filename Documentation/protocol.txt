@@ -1,0 +1,118 @@
+PROTOCOL RFC
+
+Introduction
+
+Ce document décrit la communication entre un client et un serveur de jeu en réseau. La communication entre les deux se fait par le biais de sockets, les messages doivent être des chaînes de caractère.
+
+Chaque chaîne de caractère peut contenir uniquement une commande.
+
+À tout moment, le serveur peut envoyer STOP pour signaler sa fermeture.
+
+
+Commandes obligatoires
+
+
+CONNECT [pseudo]
+
+Lorsque le serveur reçoit cette commande, il vérifie qu'un client n'est pas déjà connecté avec cette adresse ou ce pseudo. Si cette adresse n'est pas encore connecté au serveur et que le pseudo n'est pas utilisé, le serveur accepte la connection.
+
+Example:
+	Le client envoie:
+		CONNECT Mario
+	Le serveur répond:
+		CONNECT ok
+		CONNECT ko
+		STOP
+
+
+MENU
+
+Lorsque le serveur reçoit cette commande, il retourne la liste de lobbies. Chaque lobby est définis par son nom, le nombre de joueurs à l'intérieur et sa limite de joueur sous la forme csv.
+
+Exemple:
+	Le client envoie:
+		MENU
+	Le serveur répond:
+		MENU Lobby;2;4
+		STOP
+
+
+CREATE [nom du lobby] [limite de joueur] 
+
+Lorsque le serveur reçoit cette commande, il décide de créer ou non un nouveau lobby. Si le lobby est créé, il retourne les informations du lobby tout fraichement créé, à savoir, le nom, le nombre de joueur dans le lobby, le nombre maximum de joueur et la liste des joueurs dans le lobby. Un joueur est composé de son nom et de si il est prêt pour lancer la partie sous forme csv.
+
+Exemple:
+	Le client envoie:
+		CREATE Lobby 4
+	Le serveur répond:
+		LOBBY Lobby 1 4 Mario;0
+		CREATE ko
+		STOP
+
+
+JOIN [nom du lobby]
+
+Lorsque le serveur reçoit cette commande, il vérifie si le lobby que le client souhaite rejoindre existe et n'est pas plein. Si les conditions précédentes sont respectées, le serveur retourne les informations du lobby ainsi que la liste des joueurs.
+
+Exemple:
+	Le client envoie:
+		JOIN Lobby
+	Le serveur répond:
+		LOBBY Lobby 2 4 Mario;0 Luigi;0
+		JOIN ko
+		STOP
+
+
+GAME [data]
+
+Lorsque le serveur reçoit ce message, il renvoie les données de jeu actualisées ou signale la fin du jeu et la position du joueur.
+
+Exemple:
+	Le client envoie:
+		GAME [data]
+	Le serveur répond:
+		GAME [data]
+		GAMEEND 2
+		STOP
+
+
+STOP
+
+Lorsque le serveur reçoit cette commande, il supprime le client de sa liste de joueurs connectés et ne retourne rien.
+
+
+LOBBY [nom du lobby]
+
+Lorsque le serveur reçoit cette commande, il répond soit par l'actualisation des données du lobby ou soit par le lancement de la partie.
+
+Exemple:
+	Le client envoie:
+		LOBBY Lobby
+	Le serveur répond:
+		LOBBY Lobby 2 4 Mario;1 Luigi;0
+		STARTGAME Lobby
+		STOP
+
+
+QUIT
+
+Lorsque le serveur reçoit cette commande, il déconnecte le client du lobby et retourne la liste des lobbies.
+
+Exemple:
+	Le client envoie:
+		QUIT
+	Le serveur répond:
+		MENU Lobby;1;4
+		STOP
+
+
+READY [nom du lobby]
+
+Lorsque le serveur reçoit cette commande, il change le booléen qui représente si le joueur est prêt.
+
+Exemple:
+	Le client envoie:
+		READY Lobby
+	Le serveur répond:
+		LOBBY Lobby 1 3 Mario;1
+		STOP
